@@ -26,10 +26,9 @@
     },
     {
       "description": "Croissant Francês",
-      "price": 4,
+      "price": 6,
       "category": "Alimentação",
       "type": "outcome",
-      "createdAt": "2024-10-13T08:35:02.412Z",
       "id": 7
     }
   ]

@@ -10,16 +10,8 @@ import { TransactionContext } from '../../contexts/TransactionsContext'
 import { dateFormatter, priceFormatter } from '../../utils/formatter'
 import { useContextSelector } from 'use-context-selector'
 import { PencilSimple, Trash } from 'phosphor-react'
-import { z } from 'zod'
-
-const editTransactionFormSchema = z.object({
-  description: z.string(),
-  price: z.number(),
-  category: z.string(),
-  type: z.enum(['income', 'outcome']),
-})
-
-type EditTransaactionFormInputs = z.infer<typeof editTransactionFormSchema>
+import * as Dialog from '@radix-ui/react-dialog'
+import { EditTransactionModal } from '../../components/EditTransactionModal'
 
 export function Transactions() {
   const transactions = useContextSelector(TransactionContext, context => {
@@ -32,19 +24,6 @@ export function Transactions() {
 
   async function handleDeleteTransaction(id: number) {
     await deleteTransaction(id)
-  }
-
-  const editTransaction = useContextSelector(TransactionContext, context => {
-    return context.editTransaction
-  })
-
-  async function handleEditTransaction(
-    id: number,
-    data: EditTransaactionFormInputs
-  ) {
-    const { description, price, category, type } = data
-
-    await editTransaction(id, { description, price, category, type })
   }
 
   const openModal = () => {
@@ -77,9 +56,16 @@ export function Transactions() {
                     {dateFormatter.format(new Date(transaction.createdAt))}
                   </td>
                   <td>
-                    <button type="submit" onClick={openModal}>
-                      <PencilSimple size={24} weight="bold" />
-                    </button>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button type="submit" onClick={openModal}>
+                          <PencilSimple size={24} weight="bold" />
+                        </button>
+                      </Dialog.Trigger>
+
+                      <EditTransactionModal id={transaction.id} />
+                    </Dialog.Root>
+
                     <button
                       type="button"
                       onClick={() => handleDeleteTransaction(transaction.id)}

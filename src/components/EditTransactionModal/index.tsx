@@ -14,18 +14,27 @@ import { Controller, useForm } from 'react-hook-form'
 import { TransactionContext } from '../../contexts/TransactionsContext'
 import { useContextSelector } from 'use-context-selector'
 
-const newTransactionFormSchema = z.object({
+const editTransactionFormSchema = z.object({
   description: z.string(),
   price: z.number(),
   category: z.string(),
   type: z.enum(['income', 'outcome']),
 })
 
-type NewTransactionFormInputs = z.infer<typeof newTransactionFormSchema>
+type NewTransactionFormInputs = z.infer<typeof editTransactionFormSchema>
 
-export function NewTransactionModal() {
-  const createTransaction = useContextSelector(TransactionContext, context => {
+interface EdiTransactionModalProps {
+  id: number
+  close: () => void
+}
+
+export function EditTransactionModal({ id, close }: EdiTransactionModalProps) {
+  const editTransaction = useContextSelector(TransactionContext, context => {
     return context.createTransaction
+  })
+
+  const transactions = useContextSelector(TransactionContext, context => {
+    return context.transactions
   })
 
   const {
@@ -35,16 +44,19 @@ export function NewTransactionModal() {
     formState: { isSubmitting },
     reset,
   } = useForm<NewTransactionFormInputs>({
-    resolver: zodResolver(newTransactionFormSchema),
+    resolver: zodResolver(editTransactionFormSchema),
     defaultValues: {
-      type: 'income',
+      description: transactions.find(transaction => transaction.id === id)?.description || 'Descrição',
+      price: transactions.find(transaction => transaction.id === id)?.price || 0,
+      category: transactions.find(transaction => transaction.id === id)?.category || 'Categoria',
+      type: transactions.find(transaction => transaction.id === id)?.type || 'income',
     },
   })
 
-  async function handleCreateNewTransaction(data: NewTransactionFormInputs) {
+  async function handleEditTransaction(data: NewTransactionFormInputs) {
     const { description, price, category, type } = data
 
-    await createTransaction({
+    await editTransaction({
       description,
       price,
       category,
@@ -59,7 +71,7 @@ export function NewTransactionModal() {
       <Overlay />
 
       <Content onSubmit={close}>
-        <Dialog.Title> Nova transação </Dialog.Title>
+        <Dialog.Title> Editar transação </Dialog.Title>
 
         <CloseButton>
           <X />
@@ -67,25 +79,22 @@ export function NewTransactionModal() {
 
         <form
           onSubmit={handleSubmit(async (data: { description: string; price: number; category: string; type: "income" | "outcome" }) => {
-            await handleCreateNewTransaction(data)
+            await handleEditTransaction(data)
             close()
           })}
         >
           <input
             type="text"
-            placeholder="Descrição"
             required
             {...register('description')}
           />
           <input
             type="number"
-            placeholder="Preço"
             required
             {...register('price', { valueAsNumber: true })}
           />
           <input
             type="text"
-            placeholder="Categoria"
             required
             {...register('category')}
           />
@@ -114,7 +123,7 @@ export function NewTransactionModal() {
           />
 
           <button type="submit" disabled={isSubmitting}>
-            Cadastrar
+            Editar
           </button>
         </form>
       </Content>
