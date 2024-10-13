@@ -6,6 +6,10 @@ import { useSummary } from '../../hooks/useSummary'
 export function Summary() {
   const summary = useSummary()
 
+  // if summary.total is less than 0, the variant will be 'red', otherwise it will be 'green'
+  // create a priceFormatter to format the summary values
+  const totalVariant = summary.total < 0 ? 'red' : 'green'
+
   return (
     <SummaryContainer>
       <SummaryCard>
@@ -24,13 +28,13 @@ export function Summary() {
 
         <strong>{priceFormatter.format(summary.outcome)}</strong>
       </SummaryCard>
-      <SummaryCard variant="green">
+      <SummaryCard variant={totalVariant}>
         <header>
           <span>Total</span>
           <CurrencyDollar size={32} color="#fff" />
         </header>
 
-        <strong>{priceFormatter.format(summary.total)}</strong>
+        <strong> {priceFormatter.format(summary.total)}</strong>
       </SummaryCard>
     </SummaryContainer>
   )
